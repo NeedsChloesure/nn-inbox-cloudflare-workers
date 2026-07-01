@@ -111,14 +111,14 @@ export default {
         if (!publicKey) {
           return new Response("Could not retrieve public key.", { status: 403 });
         }
-
-        const json = await request.json();
+        const text = await request.text()
+        const json = JSON.parse(text)
         const itemValid = await RawInboxItemSchema.safeParseAsync(json);
         if (!itemValid.success) {
           return new Response("The item is invalid", { status: 400 });
         }
 
-        const encryptedItem = await encrypt(JSON.stringify(itemValid.data), publicKey);
+        const encryptedItem = await encrypt(text, publicKey);
         await postEncryptedInboxItem(apikey, encryptedItem, NOTESNOOK_SERVER_URL);
 
         return new Response(JSON.stringify({ success: true }), {
