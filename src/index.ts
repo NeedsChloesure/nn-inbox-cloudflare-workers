@@ -10,7 +10,7 @@ const RawInboxItemSchema = z.object({
   notebookIds: z.array(z.string()).optional(),
   tagIds: z.array(z.string()).optional(),
   type: z.enum(["note"]),
-  source: z.string(),
+  source: z.string().min(1, "Source is required"),
   version: z.literal(1),
   content: z
     .object({
@@ -79,7 +79,7 @@ async function postEncryptedInboxItem(
       "Content-Type": "application/json",
       Authorization: apiKey,
     },
-    body: JSON.stringify({ ...item }),
+    body: JSON.stringify(item),
   });
   if (!response.ok) {
     throw new Error(`failed to post inbox item: ${await response.text()}`);
@@ -113,9 +113,9 @@ export default {
         }
         const text = await request.text()
         const json = JSON.parse(text)
-        const itemValid = await RawInboxItemSchema.safeParseAsync(json);
+        const itemValid = RawInboxItemSchema.safeParse(json);
         if (!itemValid.success) {
-          return new Response("The item is invalid", { status: 400 });
+          return new Response(JSON.stringify({details: "The item is invalid.", error:itemValid.error.issues}), { status: 400, headers: {"Content-Type":"application/json" }});
         }
 
         const encryptedItem = await encrypt(text, publicKey);
