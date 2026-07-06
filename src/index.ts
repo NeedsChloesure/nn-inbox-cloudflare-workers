@@ -32,7 +32,7 @@ interface EncryptedInboxItem {
  * @param {string} rawData - The plaintext data to encrypt
  * @param {string} rawPublicKey - The recipient's OpenPGP public key
  */
-async function encrypt(
+export async function encrypt(
   rawData: string,
   rawPublicKey: string,
 ): Promise<EncryptedInboxItem> {
@@ -49,7 +49,7 @@ async function encrypt(
   };
 }
 
-async function getInboxPublicEncryptionKey(apiKey: string, server: string) {
+export async function getInboxPublicEncryptionKey(apiKey: string, server: string) {
   const response = await fetch(
     `${server}/inbox/public-encryption-key`,
     {
@@ -68,7 +68,7 @@ async function getInboxPublicEncryptionKey(apiKey: string, server: string) {
   return (data?.key as string) || null;
 }
 
-async function postEncryptedInboxItem(
+export async function postEncryptedInboxItem(
   apiKey: string,
   item: EncryptedInboxItem,
   server: string
