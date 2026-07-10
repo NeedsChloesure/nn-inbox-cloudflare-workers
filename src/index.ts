@@ -58,6 +58,9 @@ export async function getInboxPublicEncryptionKey(apiKey: string, server: string
       },
     },
   );
+  if (response.status === 401){
+    return null;
+  }
   if (!response.ok) {
     throw new Error(
       `failed to fetch inbox public encryption key: ${await response.text()}`,
