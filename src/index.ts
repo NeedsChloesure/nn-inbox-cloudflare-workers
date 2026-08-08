@@ -1,24 +1,19 @@
-import { z } from "zod";
+import typia, {tags} from "typia";
 import * as openpgp from "openpgp";
 
-const RawInboxItemSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  pinned: z.boolean().optional(),
-  favorite: z.boolean().optional(),
-  readonly: z.boolean().optional(),
-  archived: z.boolean().optional(),
-  notebookIds: z.array(z.string()).optional(),
-  tagIds: z.array(z.string()).optional(),
-  type: z.enum(["note"]),
-  source: z.string().min(1, "Source is required"),
-  version: z.literal(1),
-  content: z
-    .object({
-      type: z.enum(["html"]),
-      data: z.string(),
-    })
-    .optional(),
-});
+interface InboxItemSchema {
+  title: string & tags.MinLength<1>,
+  pinned?: boolean,
+  favorite?: boolean,
+  readonly?: boolean,
+  archived?: boolean,
+  notebookIds?: string[],
+  tagIds?: string[],
+  type: "note",
+  source: string & tags.MinLength<1>,
+  version: 1,
+  content?: {type: "html", data: string}
+}
 
 interface EncryptedInboxItem {
   v: 1;
@@ -114,14 +109,14 @@ export default {
         if (!publicKey) {
           return new Response("Could not retrieve public key.", { status: 403 });
         }
-        const text = await request.text()
-        const json = JSON.parse(text)
-        const itemValid = RawInboxItemSchema.safeParse(json);
-        if (!itemValid.success) {
-          return new Response(JSON.stringify({details: "The item is invalid.", error:itemValid.error.issues}), { status: 400, headers: {"Content-Type":"application/json" }});
+        let item
+        try {
+        const validated = typia.json.assertParse<InboxItemSchema>(await request.text())
+        item = typia.json.assertStringify<InboxItemSchema>(validated)
+        } catch (err){
+          return new Response(String(err), {status: 400})
         }
-
-        const encryptedItem = await encrypt(text, publicKey);
+        const encryptedItem = await encrypt(item, publicKey);
         await postEncryptedInboxItem(apikey, encryptedItem, NOTESNOOK_SERVER_URL);
 
         return new Response(JSON.stringify({ success: true }), {

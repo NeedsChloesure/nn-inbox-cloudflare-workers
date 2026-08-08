@@ -5,7 +5,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "nn-inbox",
-	"main": "src/index.ts",
+	"main": "dist/index.js",
 	"compatibility_date": "2026-03-10",
 	"observability": {
 		"enabled": true
@@ -13,7 +13,11 @@
 	"compatibility_flags": [
 	],
 	"vars":{"Notesnook-Server-Url": "https://api.notesnook.com/"},
-	"keep_vars": true
+	"keep_vars": true,
+	"build": {
+		"watch_dir": "./src",
+		"command": "npx ttsc"
+	}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
