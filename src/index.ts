@@ -1,7 +1,7 @@
 import typia, {tags} from "typia";
 import * as openpgp from "openpgp";
 
-interface InboxItemSchema {
+export interface InboxItemSchema {
   title: string & tags.MinLength<1>,
   pinned?: boolean,
   favorite?: boolean,
